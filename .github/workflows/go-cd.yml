@@ -1,0 +1,32 @@
+name: Go CD Pipeline
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    needs: ci  # Depende do workflow de CI
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Go
+        uses: actions/setup-go@v3
+        with:
+          go-version: '1.20'
+
+      - name: Build static files
+        run: |
+          go build -o ./dist/app ./cmd/api
+          mkdir -p ./public
+          cp ./dist/app ./public/
+          # Adicione outros arquivos estáticos se necessário
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          keep_files: true
