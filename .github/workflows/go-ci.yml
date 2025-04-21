@@ -17,6 +17,11 @@ jobs:
         with:
           go-version: '1.24'
 
+      - name: Initialize module
+        run: |
+          go get github.com/gorilla/mux@latest
+          go mod tidy
+
       - name: Run tests
         run: go test -v ./...
 
