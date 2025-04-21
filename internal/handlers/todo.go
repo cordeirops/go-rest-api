@@ -17,13 +17,24 @@ func SetupTodoRoutes(r *mux.Router) {
 
 func GetTodos(w http.ResponseWriter, r *http.Request) {
 	todos := repo.GetAll()
-	json.NewEncoder(w).Encode(todos)
+	if err := json.NewEncoder(w).Encode(todos); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }
 
 func CreateTodo(w http.ResponseWriter, r *http.Request) {
 	var todo models.Todo
-	_ = json.NewDecoder(r.Body).Decode(&todo)
+	if err := json.NewDecoder(r.Body).Decode(&todo); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
 	repo.Create(todo)
+
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(todo)
+	if err := json.NewEncoder(w).Encode(todo); err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
 }

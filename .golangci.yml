@@ -1,0 +1,19 @@
+linters:
+  enable:
+    - errcheck
+    - govet
+    - staticcheck
+
+  settings:
+    errcheck:
+      check-type-assertions: true
+      check-blank: true
+
+run:
+  skip-dirs:
+    - vendor
+  tests: false
+
+issues:
+  exclude-use-default: false
+version: 2
