@@ -19,11 +19,14 @@ jobs:
 
       - name: Initialize module
         run: |
-          go get github.com/gorilla/mux@latest
+          go mod init github.com/${{ github.repository }}
+          go get github.com/gorilla/mux@v1.8.1
           go mod tidy
 
-      - name: Run tests
-        run: go test -v ./...
+      - name: Run tests with coverage
+        run: |
+          go test -v -coverprofile=coverage.out ./...
+          go tool cover -func=coverage.out
 
   goreadme:
     runs-on: ubuntu-latest
@@ -31,19 +34,21 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Generate README
-        uses: posener/goreadme-action@v1
+      - name: Set up Go
+        uses: actions/setup-go@v3
         with:
-          badge-travisci: 'false'
-          badge-codecov: 'false'
-          badge-godoc: 'true'
-          badge-goreportcard: 'true'
+          go-version: '1.20'
+
+      - name: Generate README
+        run: |
+          go install github.com/posener/goreadme@latest
+          goreadme -credit=false -constants -functions -methods -recursive -types > README.md
 
       - name: Commit README
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-          git diff --quiet && git diff --staged --quiet || (git add README.md && git commit -m "Update README.md")
+          git diff --quiet && git diff --staged --quiet || (git add README.md && git commit -m "Auto-generated README")
           git push
 
   docker:
@@ -51,6 +56,9 @@ jobs:
     needs: test
     steps:
       - uses: actions/checkout@v3
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
@@ -66,4 +74,8 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKER_HUB_USERNAME }}/go-rest-api:latest
+          tags: |
+            ${{ secrets.DOCKER_HUB_USERNAME }}/go-rest-api:latest
+            ${{ secrets.DOCKER_HUB_USERNAME }}/go-rest-api:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
