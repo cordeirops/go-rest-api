@@ -1,23 +1,28 @@
 name: Go CD Pipeline
 
 on:
-  push:
-    branches: [ main ]
+  workflow_run:
+    workflows: ["Go CI Pipeline"]
+    types:
+      - completed
+    branches: [main]
   workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    needs: ci  # Depende do workflow de CI
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - uses: actions/checkout@v3
+        with:
+          ref: main
 
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: '1.20'
+          go-version: '1.24'
 
-      - name: Build static files
+      - name: Build application
         run: |
           go build -o ./dist/app ./cmd/api
           mkdir -p ./public
@@ -30,3 +35,4 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./public
           keep_files: true
+          force_orphan: true
