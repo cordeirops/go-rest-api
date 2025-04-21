@@ -82,11 +82,8 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    needs: build
-    if: >
-      github.event_name == 'push' || 
-      (github.event_name == 'workflow_run' && 
-       github.event.workflow_run.conclusion == 'success') || github.event_name == 'pull_request' || github.ref == 'refs/heads/main'
+    needs: [ build, lint, docker ]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     steps:
       - uses: actions/checkout@v3
         with:
@@ -103,7 +100,6 @@ jobs:
           go build -o ./dist/app ./cmd/api
           mkdir -p ./public
           cp ./dist/app ./public/
-          # Adicione outros arquivos estáticos se necessário
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
