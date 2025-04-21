@@ -3,17 +3,15 @@ linters:
     - errcheck
     - govet
     - staticcheck
+    - gofmt
+    - goimports
 
-  settings:
-    errcheck:
-      check-type-assertions: true
-      check-blank: true
-
-run:
-  skip-dirs:
-    - vendor
-  tests: false
+linters-settings:
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
 
 issues:
   exclude-use-default: false
-version: 2
+  exclude-dirs:
+    - vendor
