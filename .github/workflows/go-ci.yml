@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -27,54 +27,29 @@ jobs:
           go test -v -coverprofile=coverage.out ./...
           go tool cover -func=coverage.out
 
-  goreadme:
+  lint:
     runs-on: ubuntu-latest
-    needs: test
+    needs: build
     steps:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: '1.24'
+          go-version: '1.20'
 
-      - name: Install goreadme
-        run: go install github.com/posener/goreadme/cmd/goreadme@latest
-
-      - name: Generate README
-        run: |
-          if [ -z "$(git rev-parse --show-toplevel)" ]; then
-            echo "Repository not initialized. Skipping README generation."
-            exit 1
-          fi
-          $(go env GOPATH)/bin/goreadme -credit=false -constants -functions -methods -recursive -types . > README.md
-
-      - name: Commit and push if README changed
-        id: commit
-        run: |
-          if [ ! -f README.md ]; then
-            echo "README.md does not exist. Skipping commit."
-            exit 0
-          fi
-          
-          if git diff --quiet README.md; then
-            echo "No changes to README.md"
-          else
-            git config --global user.name "GitHub Actions"
-            git config --global user.email "actions@github.com"
-            git add README.md
-            git commit -m "Auto-generated README [skip ci]"
-            git push origin HEAD:${GITHUB_REF#refs/heads/}
-            echo "::notice::README.md updated and pushed"
-          fi
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v3
+        with:
+          version: v1.52.2
+          args: --timeout=5m --exclude-use-default=false
   
 
   docker:
     runs-on: ubuntu-latest
-    needs: test
+    needs: build
     steps:
       - uses: actions/checkout@v3
 
