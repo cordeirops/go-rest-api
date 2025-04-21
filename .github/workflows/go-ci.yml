@@ -33,36 +33,36 @@ jobs:
     steps:
       - uses: actions/checkout@v3
         with:
-          fetch-depth: 0  # Necessário para o git diff funcionar corretamente
+          fetch-depth: 0
 
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
           go-version: '1.24'
 
-      - name: Run goreadme
+      - name: Install goreadme
+        run: go install github.com/posener/goreadme/cmd/goreadme@latest
+
+      - name: Generate README
         run: |
-          go run github.com/posener/goreadme/cmd/goreadme@latest \
-            -credit=false \
-            -constants \
-            -functions \
-            -methods \
-            -recursive \
-            -types \
-            > README.md
+          $(go env GOPATH)/bin/goreadme -credit=false -constants -functions -methods -recursive -types > README.md
 
       - name: Commit and push if README changed
         id: commit
         run: |
-          if git diff --quiet README.md; then
-            echo "No changes to README.md"
+          if [ ! -f README.md ]; then
+            echo "README.md does not exist. Skipping diff check."
           else
-            git config --global user.name "GitHub Actions"
-            git config --global user.email "actions@github.com"
-            git add README.md
-            git commit -m "Auto-generated README [skip ci]"
-            git push
-            echo "::set-output name=changed::true"
+            if git diff --quiet README.md; then
+              echo "No changes to README.md"
+            else
+              git config --global user.name "GitHub Actions"
+              git config --global user.email "actions@github.com"
+              git add README.md
+              git commit -m "Auto-generated README [skip ci]"
+              git push
+              echo "::set-output name=changed::true"
+            fi
           fi
 
   docker:
