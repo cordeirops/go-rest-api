@@ -2,10 +2,11 @@ package handlers
 
 import (
 	"encoding/json"
-	"github.com/gorilla/mux"
 	"go-rest-api/internal/models"
 	"go-rest-api/internal/repository"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 var repo = repository.NewTodoRepository()

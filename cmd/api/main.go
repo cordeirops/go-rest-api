@@ -2,12 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/gorilla/mux"
 	"go-rest-api/internal/handlers"
-	_ "go-rest-api/internal/models"
-	_ "go-rest-api/internal/repository"
 	"log"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 func main() {
