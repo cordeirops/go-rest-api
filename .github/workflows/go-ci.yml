@@ -19,7 +19,6 @@ jobs:
 
       - name: Initialize module
         run: |
-          go mod init github.com/${{ github.repository }}
           go get github.com/gorilla/mux@v1.8.1
           go mod tidy
 
