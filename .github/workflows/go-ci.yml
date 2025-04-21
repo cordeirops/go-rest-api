@@ -36,18 +36,22 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: '1.20'
+          go-version: '1.24'
+
+      - name: Install goreadme
+        run: go install github.com/posener/goreadme/cmd/goreadme@latest
 
       - name: Generate README
         run: |
-          go install github.com/posener/goreadme@latest
+          export PATH=$PATH:$(go env GOPATH)/bin
           goreadme -credit=false -constants -functions -methods -recursive -types > README.md
 
       - name: Commit README
+        if: success()
         run: |
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
-          git diff --quiet && git diff --staged --quiet || (git add README.md && git commit -m "Auto-generated README")
+          git diff --quiet && git diff --staged --quiet || (git add README.md && git commit -m "Auto-generated README [skip ci]")
           git push
 
   docker:
