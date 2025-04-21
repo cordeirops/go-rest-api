@@ -1,17 +1,20 @@
 name: Go CD Pipeline
 
 on:
+  push:
+    branches: [main]
   workflow_run:
     workflows: ["Go CI Pipeline"]
-    types:
-      - completed
+    types: [completed]
     branches: [main]
-  workflow_dispatch:
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: >
+      github.event_name == 'push' || 
+      (github.event_name == 'workflow_run' && 
+       github.event.workflow_run.conclusion == 'success')
     steps:
       - uses: actions/checkout@v3
         with:
