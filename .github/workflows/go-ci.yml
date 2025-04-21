@@ -34,6 +34,7 @@ jobs:
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Set up Go
         uses: actions/setup-go@v3
@@ -45,25 +46,31 @@ jobs:
 
       - name: Generate README
         run: |
-          $(go env GOPATH)/bin/goreadme -credit=false -constants -functions -methods -recursive -types > README.md
+          if [ -z "$(git rev-parse --show-toplevel)" ]; then
+            echo "Repository not initialized. Skipping README generation."
+            exit 1
+          fi
+          $(go env GOPATH)/bin/goreadme -credit=false -constants -functions -methods -recursive -types . > README.md
 
       - name: Commit and push if README changed
         id: commit
         run: |
           if [ ! -f README.md ]; then
-            echo "README.md does not exist. Skipping diff check."
-          else
-            if git diff --quiet README.md; then
-              echo "No changes to README.md"
-            else
-              git config --global user.name "GitHub Actions"
-              git config --global user.email "actions@github.com"
-              git add README.md
-              git commit -m "Auto-generated README [skip ci]"
-              git push
-              echo "::set-output name=changed::true"
-            fi
+            echo "README.md does not exist. Skipping commit."
+            exit 0
           fi
+          
+          if git diff --quiet README.md; then
+            echo "No changes to README.md"
+          else
+            git config --global user.name "GitHub Actions"
+            git config --global user.email "actions@github.com"
+            git add README.md
+            git commit -m "Auto-generated README [skip ci]"
+            git push origin HEAD:${GITHUB_REF#refs/heads/}
+            echo "::notice::README.md updated and pushed"
+          fi
+  
 
   docker:
     runs-on: ubuntu-latest
