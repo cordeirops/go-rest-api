@@ -10,6 +10,10 @@ import (
 	"testing"
 )
 
+/*
+TestCreateTodoHandler: Verifica se o handler CreateTodo cria um novo ToDo
+corretamente e retorna o status HTTP 201 (Created).
+*/
 func TestCreateTodoHandler(t *testing.T) {
 	todo := models.Todo{
 		ID:       "1",
@@ -17,7 +21,10 @@ func TestCreateTodoHandler(t *testing.T) {
 		Compelto: false,
 	}
 
-	body, _ := json.Marshal(todo)
+	body, err := json.Marshal(todo)
+	if err != nil {
+		t.Fatalf("Erro ao serializar JSON: %v", err)
+	}
 
 	req, err := http.NewRequest("POST", "/todos", bytes.NewBuffer(body))
 	if err != nil {
@@ -25,7 +32,6 @@ func TestCreateTodoHandler(t *testing.T) {
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	// Cria um ResponseWriter simulado
 	rr := httptest.NewRecorder()
 	handler := http.HandlerFunc(CreateTodo)
 
@@ -45,6 +51,10 @@ func TestCreateTodoHandler(t *testing.T) {
 	}
 }
 
+/*
+TestGetTodosHandler: Testa se o handler GetTodos retorna corretamente a lista
+de ToDos com o status HTTP 200 (OK).
+*/
 func TestGetTodosHandler(t *testing.T) {
 	req, err := http.NewRequest("GET", "/todos", nil)
 	if err != nil {
@@ -65,6 +75,10 @@ func TestGetTodosHandler(t *testing.T) {
 	}
 }
 
+/*
+TestCreateTodoInvalidData: Garante que o handler CreateTodo retorna o status
+HTTP 400 (Bad Request) ao receber dados inválidos.
+*/
 func TestCreateTodoInvalidData(t *testing.T) {
 	req, err := http.NewRequest("POST", "/todos", bytes.NewBuffer([]byte("{}")))
 	if err != nil {
@@ -81,6 +95,7 @@ func TestCreateTodoInvalidData(t *testing.T) {
 	}
 }
 
+/*TestTodoRepositoryCreate: Verifica se o repositório cria e armazena um ToDo corretamente.*/
 func TestTodoRepositoryCreate(t *testing.T) {
 	repo := repository.NewTodoRepository()
 	todo := models.Todo{
@@ -99,6 +114,7 @@ func TestTodoRepositoryCreate(t *testing.T) {
 	}
 }
 
+/*TestTodoRepositoryGetAll: Testa se o repositório retorna corretamente todos os ToDos armazenados.*/
 func TestTodoRepositoryGetAll(t *testing.T) {
 	repo := repository.NewTodoRepository()
 	repo.Create(models.Todo{ID: "3", Titulo: "README", Compelto: true})
@@ -109,6 +125,10 @@ func TestTodoRepositoryGetAll(t *testing.T) {
 	}
 }
 
+/*
+TestCreateMultipleTodos: Valida se o repositório pode armazenar e retornar
+múltiplos ToDos corretamente.
+*/
 func TestCreateMultipleTodos(t *testing.T) {
 	repo := repository.NewTodoRepository()
 
