@@ -31,6 +31,11 @@ func CreateTodo(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if todo.ID == "" || todo.Titulo == "" {
+		http.Error(w, "Campos obrigatórios estão faltando", http.StatusBadRequest)
+		return
+	}
+
 	repo.Create(todo)
 
 	w.WriteHeader(http.StatusCreated)
